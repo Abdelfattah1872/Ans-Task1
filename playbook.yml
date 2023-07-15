@@ -1,0 +1,43 @@
+---
+- name: Install NGINX and configure
+  hosts: all
+  become: true
+  tasks:
+    - name: install nginx
+      apt:
+        name: nginx
+        state: latest
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+    - name: Change default html file
+      copy:
+        src: index.html
+        dest: /var/www/html/
+    - name: change default port
+      script: port.sh
+    - name: Replace default page with custom index.html
+      copy:
+        src: index.html
+        dest: /var/www/html/index.html
+- name: Deploy app from GitHub
+  hosts: all
+  become: true
+  tasks:
+    - name: Clone app-repo
+      git:
+        repo: https://github.com/sabreensalama/dockerize-node-app-task
+        dest: /app
+
+    - name: Install REQ
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+    - name: install app DBNS
+      npm:
+        path: /app
+        state: latest
